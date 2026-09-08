@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bileşik Götürü Simülasyonu</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin: 0 0 8px 0;
+            color: var(--text-main);
+        }
+
+        .header p {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin: 0;
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-sub);
+        }
+
+        .slider-label span.value {
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            outline: none;
+            accent-color: var(--accent-green);
+            cursor: pointer;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card.red { border-left: 4px solid var(--accent-red); }
+        .card.green { border-left: 4px solid var(--accent-green); }
+
+        .card-title {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .card-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 260px;
+            margin-top: 10px;
+        }
+
+        .footer-note {
+            font-size: 11px;
+            color: var(--text-sub);
+            text-align: center;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>☕ Bileşik Götürü Simülasyonu</h1>
+        <p>Günlük harcama vs. bileşik getiri potansiyeli</p>
+    </div>
+
+    <div class="slider-group">
+        <div class="slider-label">
+            <span>Günlük Harcama:</span>
+            <span class="value" id="dailyVal">200 TL</span>
+        </div>
+        <input type="range" id="daily" min="50" max="1000" step="25" value="200">
+    </div>
+
+    <div class="slider-group">
+        <div class="slider-label">
+            <span>Yıllık Bileşik Getiri:</span>
+            <span class="value" id="rateVal">%10</span>
+        </div>
+        <input type="range" id="rate" min="1" max="30" step="1" value="10">
+    </div>
+
+    <div class="slider-group">
+        <div class="slider-label">
+            <span>Zaman Dilimi:</span>
+            <span class="value" id="yearsVal">10 Yıl</span>
+        </div>
+        <input type="range" id="years" min="1" max="20" step="1" value="10">
+    </div>
+
+    <div class="summary-cards">
+        <div class="card red">
+            <div class="card-title">Harcanan Anapara</div>
+            <div class="card-value" id="totalSpent">0 TL</div>
+        </div>
+        <div class="card green">
+            <div class="card-title">Kaçırılan Potansiyel Servet</div>
+            <div class="card-value" id="opportunityCost">0 TL</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <div class="footer-note">
+        *Seçilen yıllık bileşik getiri oranıyla bu harcamanın ulaşabileceği potansiyel servet hesabı.
+    </div>
+</div>
+
+<script>
+    const dailyInput = document.getElementById('daily');
+    const rateInput = document.getElementById('rate');
+    const yearsInput = document.getElementById('years');
+
+    const dailyVal = document.getElementById('dailyVal');
+    const rateVal = document.getElementById('rateVal');
+    const yearsVal = document.getElementById('yearsVal');
+
+    const totalSpentEl = document.getElementById('totalSpent');
+    const opportunityCostEl = document.getElementById('opportunityCost');
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    
+    let chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Fırsat Maliyeti (Bileşik Getiri)',
+                    data: [],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Doğrudan Harcanan Anapara',
+                    data: [],
+                    borderColor: '#ef4444',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+            },
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+            }
+        }
+    });
+
+    function calculate() {
+        const daily = parseFloat(dailyInput.value);
+        const rate = parseFloat(rateInput.value);
+        const years = parseInt(yearsInput.value);
+
+        dailyVal.textContent = daily.toLocaleString('tr-TR') + ' TL';
+        rateVal.textContent = '%' + rate;
+        yearsVal.textContent = years + ' Yıl';
+
+        const labels = [];
+        const spentData = [];
+        const opportunityData = [];
+
+        const monthlySpent = daily * 30;
+        const monthlyRate = (rate / 100) / 12;
+
+        for (let y = 1; y <= years; y++) {
+            labels.push(y + '. Yıl');
+            const totalSpent = daily * 365 * y;
+            spentData.push(totalSpent);
+
+            const totalMonths = y * 12;
+            let oppCost = 0;
+            if (monthlyRate > 0) {
+                oppCost = monthlySpent * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+            } else {
+                oppCost = totalSpent;
+            }
+            opportunityData.push(Math.round(oppCost));
+        }
+
+        totalSpentEl.textContent = (daily * 365 * years).toLocaleString('tr-TR') + ' TL';
+        opportunityCostEl.textContent = opportunityData[opportunityData.length - 1].toLocaleString('tr-TR') + ' TL';
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = opportunityData;
+        chart.data.datasets[1].data = spentData;
+        chart.update();
+    }
+
+    dailyInput.addEventListener('input', calculate);
+    rateInput.addEventListener('input', calculate);
+    yearsInput.addEventListener('input', calculate);
+
+    calculate();
+</script>
+
+</body>
+</html>
