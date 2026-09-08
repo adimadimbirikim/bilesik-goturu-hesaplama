@@ -10,6 +10,7 @@
             --bg-color: #0f172a;
             --card-bg: #1e293b;
             --accent-green: #10b981;
+            --accent-blue: #3b82f6;
             --accent-red: #ef4444;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
@@ -30,7 +31,7 @@
 
         .container {
             width: 100%;
-            max-width: 650px;
+            max-width: 680px;
             background: var(--card-bg);
             border-radius: 16px;
             padding: 24px;
@@ -56,14 +57,14 @@
         }
 
         .slider-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .slider-label {
             display: flex;
             justify-content: space-between;
             font-size: 14px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: var(--text-sub);
         }
 
@@ -84,35 +85,36 @@
 
         .summary-cards {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 24px 0;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
         }
 
         .card {
             background: rgba(15, 23, 42, 0.6);
-            padding: 14px;
+            padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border-color);
         }
 
         .card.red { border-left: 4px solid var(--accent-red); }
         .card.green { border-left: 4px solid var(--accent-green); }
+        .card.blue { border-left: 4px solid var(--accent-blue); }
 
         .card-title {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-sub);
             margin-bottom: 4px;
         }
 
         .card-value {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: bold;
         }
 
         .chart-container {
             position: relative;
-            height: 260px;
+            height: 280px;
             margin-top: 10px;
         }
 
@@ -129,7 +131,7 @@
 <div class="container">
     <div class="header">
         <h1>☕ Bileşik Götürü Simülasyonu</h1>
-        <p>Günlük harcama vs. bileşik getiri potansiyeli</p>
+        <p>Harcama, Bileşik Getiri ve Enflasyona Göre Alım Gücü</p>
     </div>
 
     <div class="slider-group">
@@ -142,10 +144,18 @@
 
     <div class="slider-group">
         <div class="slider-label">
-            <span>Yıllık Getiri (Enflasyon + Getiri):</span>
+            <span>Nominal Getiri (Yıllık):</span>
             <span class="value" id="rateVal">%35</span>
         </div>
         <input type="range" id="rate" min="1" max="60" step="1" value="35">
+    </div>
+
+    <div class="slider-group">
+        <div class="slider-label">
+            <span>Yıllık Enflasyon Oranı:</span>
+            <span class="value" id="inflationVal">%25</span>
+        </div>
+        <input type="range" id="inflation" min="0" max="50" step="1" value="25">
     </div>
 
     <div class="slider-group">
@@ -162,8 +172,12 @@
             <div class="card-value" id="totalSpent">0 TL</div>
         </div>
         <div class="card green">
-            <div class="card-title">Kaçırılan Potansiyel Servet</div>
+            <div class="card-title">Nominal Servet</div>
             <div class="card-value" id="opportunityCost">0 TL</div>
+        </div>
+        <div class="card blue">
+            <div class="card-title">Bugünün Alım Gücü</div>
+            <div class="card-value" id="realValue">0 TL</div>
         </div>
     </div>
 
@@ -172,21 +186,24 @@
     </div>
 
     <div class="footer-note">
-        *Seçilen yıllık bileşik getiri oranıyla bu harcamanın ulaşabileceği potansiyel servet hesabı.
+        *Nominal servet seçilen bileşik getiriyle oluşan tutardır. Bugünün alım gücü ise enflasyondan arındırılmış reel getiriyi temsil eder.
     </div>
 </div>
 
 <script>
     const dailyInput = document.getElementById('daily');
     const rateInput = document.getElementById('rate');
+    const inflationInput = document.getElementById('inflation');
     const yearsInput = document.getElementById('years');
 
     const dailyVal = document.getElementById('dailyVal');
     const rateVal = document.getElementById('rateVal');
+    const inflationVal = document.getElementById('inflationVal');
     const yearsVal = document.getElementById('yearsVal');
 
     const totalSpentEl = document.getElementById('totalSpent');
     const opportunityCostEl = document.getElementById('opportunityCost');
+    const realValueEl = document.getElementById('realValue');
 
     const ctx = document.getElementById('myChart').getContext('2d');
     
@@ -196,7 +213,7 @@
             labels: [],
             datasets: [
                 {
-                    label: 'Fırsat Maliyeti (Bileşik Getiri)',
+                    label: 'Nominal Servet',
                     data: [],
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -204,7 +221,15 @@
                     tension: 0.3
                 },
                 {
-                    label: 'Doğrudan Harcanan Anapara',
+                    label: 'Reel Servet (Bugünün Alım Gücü)',
+                    data: [],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.3
+                },
+                {
+                    label: 'Harcanan Anapara',
                     data: [],
                     borderColor: '#ef4444',
                     borderDash: [5, 5],
@@ -229,17 +254,19 @@
     function calculate() {
         const daily = parseFloat(dailyInput.value);
         const rate = parseFloat(rateInput.value);
+        const inflation = parseFloat(inflationInput.value);
         const years = parseInt(yearsInput.value);
 
         dailyVal.textContent = daily.toLocaleString('tr-TR') + ' TL';
         rateVal.textContent = '%' + rate;
+        inflationVal.textContent = '%' + inflation;
         yearsVal.textContent = years + ' Yıl';
 
         const labels = [];
         const spentData = [];
         const opportunityData = [];
+        const realData = [];
 
-        // Yılı 365 gün kabul ederek tam aylık ortalama harcama tutarı:
         const yearlySpent = daily * 365;
         const monthlySpent = yearlySpent / 12; 
         const monthlyRate = (rate / 100) / 12;
@@ -247,7 +274,6 @@
         for (let y = 1; y <= years; y++) {
             labels.push(y + '. Yıl');
             
-            // Yılda tam 365 gün üzerinden hesaplanan anapara
             const totalSpent = yearlySpent * y;
             spentData.push(totalSpent);
 
@@ -259,19 +285,27 @@
                 oppCost = totalSpent;
             }
             opportunityData.push(Math.round(oppCost));
+
+            // Enflasyondan arındırılmış reel değer hesabı
+            const inflationDiscount = Math.pow(1 + (inflation / 100), y);
+            const realVal = oppCost / inflationDiscount;
+            realData.push(Math.round(realVal));
         }
 
         totalSpentEl.textContent = (yearlySpent * years).toLocaleString('tr-TR') + ' TL';
         opportunityCostEl.textContent = opportunityData[opportunityData.length - 1].toLocaleString('tr-TR') + ' TL';
+        realValueEl.textContent = realData[realData.length - 1].toLocaleString('tr-TR') + ' TL';
 
         chart.data.labels = labels;
         chart.data.datasets[0].data = opportunityData;
-        chart.data.datasets[1].data = spentData;
+        chart.data.datasets[1].data = realData;
+        chart.data.datasets[2].data = spentData;
         chart.update();
     }
 
     dailyInput.addEventListener('input', calculate);
     rateInput.addEventListener('input', calculate);
+    inflationInput.addEventListener('input', calculate);
     yearsInput.addEventListener('input', calculate);
 
     calculate();
