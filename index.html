@@ -239,12 +239,16 @@
         const spentData = [];
         const opportunityData = [];
 
-        const monthlySpent = daily * 30;
+        // Yılı 365 gün kabul ederek tam aylık ortalama harcama tutarı:
+        const yearlySpent = daily * 365;
+        const monthlySpent = yearlySpent / 12; 
         const monthlyRate = (rate / 100) / 12;
 
         for (let y = 1; y <= years; y++) {
             labels.push(y + '. Yıl');
-            const totalSpent = daily * 365 * y;
+            
+            // Yılda tam 365 gün üzerinden hesaplanan anapara
+            const totalSpent = yearlySpent * y;
             spentData.push(totalSpent);
 
             const totalMonths = y * 12;
@@ -257,7 +261,7 @@
             opportunityData.push(Math.round(oppCost));
         }
 
-        totalSpentEl.textContent = (daily * 365 * years).toLocaleString('tr-TR') + ' TL';
+        totalSpentEl.textContent = (yearlySpent * years).toLocaleString('tr-TR') + ' TL';
         opportunityCostEl.textContent = opportunityData[opportunityData.length - 1].toLocaleString('tr-TR') + ' TL';
 
         chart.data.labels = labels;
