@@ -7,13 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --bg-color: #0d1527;
+            --card-bg: #172136;
+            --input-bg: #0b1222;
             --accent-green: #10b981;
             --accent-red: #ef4444;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --border-color: #334155;
+            --border-color: #26334d;
         }
 
         body {
@@ -26,6 +27,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            box-sizing: border-box;
         }
 
         .container {
@@ -33,20 +35,22 @@
             max-width: 680px;
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            padding: 28px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         .header h1 {
             font-size: 22px;
+            font-weight: 700;
             margin: 0 0 8px 0;
             color: var(--text-main);
+            letter-spacing: -0.3px;
         }
 
         .header p {
@@ -56,42 +60,101 @@
         }
 
         .slider-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .slider-label {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 14px;
-            margin-bottom: 6px;
+            font-weight: 500;
+            margin-bottom: 10px;
             color: var(--text-sub);
         }
 
-        .slider-label span.value {
-            font-weight: bold;
+        .input-box-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 14px;
+            min-width: 110px;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-box-wrapper:focus-within {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+        }
+
+        .num-input {
+            background: transparent;
+            border: none;
+            outline: none;
             color: var(--accent-green);
+            font-weight: 700;
+            font-size: 14px;
+            width: 100%;
+            text-align: right;
+            font-family: inherit;
+        }
+
+        .num-input::-webkit-outer-spin-button,
+        .num-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .num-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .unit {
+            color: var(--accent-green);
+            font-weight: 700;
+            font-size: 14px;
+            margin-left: 6px;
+            user-select: none;
         }
 
         input[type="range"] {
+            -webkit-appearance: none;
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
+            height: 4px;
+            border-radius: 2px;
             background: var(--border-color);
             outline: none;
-            accent-color: var(--accent-green);
             cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
         }
 
         .summary-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 24px 0;
+            gap: 16px;
+            margin: 28px 0;
         }
 
         .card {
-            background: rgba(15, 23, 42, 0.6);
-            padding: 16px;
+            background: rgba(11, 18, 34, 0.6);
+            padding: 16px 18px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
         }
@@ -107,12 +170,13 @@
 
         .card-value {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
         .chart-container {
             position: relative;
-            height: 280px;
+            height: 260px;
             margin-top: 10px;
         }
 
@@ -120,7 +184,8 @@
             font-size: 11px;
             color: var(--text-sub);
             text-align: center;
-            margin-top: 16px;
+            margin-top: 20px;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -132,28 +197,40 @@
         <p>Küçük Harcamaların Bileşik Getiri ile Potansiyel Değeri</p>
     </div>
 
+    <!-- Günlük Harcama -->
     <div class="slider-group">
         <div class="slider-label">
             <span>Günlük Harcama:</span>
-            <span class="value" id="dailyVal">200 TL</span>
+            <div class="input-box-wrapper">
+                <input type="number" id="dailyInput" class="num-input" value="200" min="1" max="10000" step="10">
+                <span class="unit">TL</span>
+            </div>
         </div>
-        <input type="range" id="daily" min="50" max="1000" step="25" value="200">
+        <input type="range" id="dailySlider" min="50" max="1000" step="25" value="200">
     </div>
 
+    <!-- Yıllık Net Getiri (Enflasyondan Arındırılmış) -->
     <div class="slider-group">
         <div class="slider-label">
-            <span>Yıllık Bileşik Getiri:</span>
-            <span class="value" id="rateVal">%10</span>
+            <span>Yıllık Net Getiri (Enflasyondan Arındırılmış):</span>
+            <div class="input-box-wrapper">
+                <input type="number" id="rateInput" class="num-input" value="5" min="1" max="100" step="1">
+                <span class="unit">%</span>
+            </div>
         </div>
-        <input type="range" id="rate" min="1" max="100" step="1" value="10">
+        <input type="range" id="rateSlider" min="1" max="100" step="1" value="5">
     </div>
 
+    <!-- Zaman Dilimi -->
     <div class="slider-group">
         <div class="slider-label">
             <span>Zaman Dilimi:</span>
-            <span class="value" id="yearsVal">10 Yıl</span>
+            <div class="input-box-wrapper">
+                <input type="number" id="yearsInput" class="num-input" value="10" min="1" max="40" step="1">
+                <span class="unit">Yıl</span>
+            </div>
         </div>
-        <input type="range" id="years" min="1" max="20" step="1" value="10">
+        <input type="range" id="yearsSlider" min="1" max="20" step="1" value="10">
     </div>
 
     <div class="summary-cards">
@@ -172,24 +249,25 @@
     </div>
 
     <div class="footer-note">
-    *Not: Bu simülasyon, günlük küçük harcamaların zaman içinde yaratabileceği potansiyel birikim gücünü ve fırsat maliyetini göstermek amacıyla hazırlanmış bir farkındalık aracıdır. Hesaplamalar, harcanan tutarın düzenli yatırıma dönüştüğü varsayımıyla yapılmış olup kesin bir getiri vaadi veya yatırım tavsiyesi içermez.
-</div>
+        *Not: Bu simülasyon, günlük küçük harcamaların zaman içinde yaratabileceği potansiyel birikim gücünü ve fırsat maliyetini göstermek amacıyla hazırlanmış bir farkındalık aracıdır. Hesaplamalar, harcanan tutarın düzenli yatırıma dönüştüğü varsayımıyla yapılmış olup kesin bir getiri vaadi veya yatırım tavsiyesi içermez.
+    </div>
 </div>
 
 <script>
-    const dailyInput = document.getElementById('daily');
-    const rateInput = document.getElementById('rate');
-    const yearsInput = document.getElementById('years');
+    const dailyInput = document.getElementById('dailyInput');
+    const dailySlider = document.getElementById('dailySlider');
 
-    const dailyVal = document.getElementById('dailyVal');
-    const rateVal = document.getElementById('rateVal');
-    const yearsVal = document.getElementById('yearsVal');
+    const rateInput = document.getElementById('rateInput');
+    const rateSlider = document.getElementById('rateSlider');
+
+    const yearsInput = document.getElementById('yearsInput');
+    const yearsSlider = document.getElementById('yearsSlider');
 
     const totalSpentEl = document.getElementById('totalSpent');
     const opportunityCostEl = document.getElementById('opportunityCost');
 
     const ctx = document.getElementById('myChart').getContext('2d');
-    
+
     let chart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -199,17 +277,22 @@
                     label: 'Kaçırılan Potansiyel Servet',
                     data: [],
                     borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.3
+                    tension: 0.35,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Toplam Harcanan Anapara',
                     data: [],
                     borderColor: '#ef4444',
+                    borderWidth: 1.5,
                     borderDash: [5, 5],
                     fill: false,
-                    tension: 0.1
+                    tension: 0.1,
+                    pointRadius: 2
                 }
             ]
         },
@@ -217,23 +300,48 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: '#94a3b8', font: { size: 12 } } }
+                legend: { 
+                    labels: { 
+                        color: '#94a3b8', 
+                        font: { size: 12, family: "'Segoe UI', system-ui, -apple-system, sans-serif" },
+                        boxWidth: 12,
+                        padding: 12
+                    } 
+                },
+                tooltip: {
+                    backgroundColor: '#0b1222',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#94a3b8',
+                    borderColor: '#26334d',
+                    borderWidth: 1,
+                    padding: 10
+                }
             },
             scales: {
-                x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-                y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                x: { 
+                    ticks: { color: '#94a3b8', font: { size: 11 } }, 
+                    grid: { color: 'rgba(38, 51, 77, 0.5)' } 
+                },
+                y: { 
+                    ticks: { color: '#94a3b8', font: { size: 11 } }, 
+                    grid: { color: 'rgba(38, 51, 77, 0.5)' } 
+                }
             }
         }
     });
 
-    function calculate() {
-        const daily = parseFloat(dailyInput.value);
-        const rate = parseFloat(rateInput.value);
-        const years = parseInt(yearsInput.value);
+    function updateSliderTrack(slider) {
+        const min = parseFloat(slider.min) || 0;
+        const max = parseFloat(slider.max) || 100;
+        const val = parseFloat(slider.value) || 0;
+        const percentage = ((val - min) / (max - min)) * 100;
+        slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #26334d ${percentage}%, #26334d 100%)`;
+    }
 
-        dailyVal.textContent = daily.toLocaleString('tr-TR') + ' TL';
-        rateVal.textContent = '%' + rate;
-        yearsVal.textContent = years + ' Yıl';
+    function calculate() {
+        const daily = parseFloat(dailyInput.value) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
+        const years = parseInt(yearsInput.value) || 0;
 
         const labels = [];
         const spentData = [];
@@ -259,8 +367,9 @@
             opportunityData.push(Math.round(oppCost));
         }
 
-        totalSpentEl.textContent = (yearlySpent * years).toLocaleString('tr-TR') + ' TL';
-        opportunityCostEl.textContent = opportunityData[opportunityData.length - 1].toLocaleString('tr-TR') + ' TL';
+        totalSpentEl.textContent = Math.round(yearlySpent * years).toLocaleString('tr-TR') + ' TL';
+        const finalOpp = opportunityData.length > 0 ? opportunityData[opportunityData.length - 1] : 0;
+        opportunityCostEl.textContent = finalOpp.toLocaleString('tr-TR') + ' TL';
 
         chart.data.labels = labels;
         chart.data.datasets[0].data = opportunityData;
@@ -268,9 +377,25 @@
         chart.update();
     }
 
-    dailyInput.addEventListener('input', calculate);
-    rateInput.addEventListener('input', calculate);
-    yearsInput.addEventListener('input', calculate);
+    function syncPair(input, slider) {
+        updateSliderTrack(slider);
+
+        input.addEventListener('input', () => {
+            slider.value = input.value;
+            updateSliderTrack(slider);
+            calculate();
+        });
+
+        slider.addEventListener('input', () => {
+            input.value = slider.value;
+            updateSliderTrack(slider);
+            calculate();
+        });
+    }
+
+    syncPair(dailyInput, dailySlider);
+    syncPair(rateInput, rateSlider);
+    syncPair(yearsInput, yearsSlider);
 
     calculate();
 </script>
