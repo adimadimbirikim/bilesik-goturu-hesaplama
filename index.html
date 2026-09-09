@@ -16,7 +16,6 @@
             --text-sub: #94a3b8;
             --border-color: #26334d;
         }
-
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
@@ -29,7 +28,6 @@
             min-height: 100vh;
             box-sizing: border-box;
         }
-
         .container {
             width: 100%;
             max-width: 680px;
@@ -39,12 +37,10 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
         }
-
         .header {
             text-align: center;
             margin-bottom: 28px;
         }
-
         .header h1 {
             font-size: 22px;
             font-weight: 700;
@@ -52,17 +48,23 @@
             color: var(--text-main);
             letter-spacing: -0.3px;
         }
-
         .header p {
             font-size: 14px;
             color: var(--text-sub);
             margin: 0;
         }
-
         .slider-group {
             margin-bottom: 22px;
         }
-
+        .slider-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .slider-row .slider-group {
+            margin-bottom: 0;
+        }
         .slider-label {
             display: flex;
             justify-content: space-between;
@@ -72,7 +74,6 @@
             margin-bottom: 10px;
             color: var(--text-sub);
         }
-
         .input-box-wrapper {
             display: flex;
             align-items: center;
@@ -85,12 +86,10 @@
             box-sizing: border-box;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-
         .input-box-wrapper:focus-within {
             border-color: var(--accent-green);
             box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
         }
-
         .num-input {
             background: transparent;
             border: none;
@@ -102,7 +101,6 @@
             text-align: right;
             font-family: inherit;
         }
-
         .num-input::-webkit-outer-spin-button,
         .num-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -111,7 +109,6 @@
         .num-input[type=number] {
             -moz-appearance: textfield;
         }
-
         .unit {
             color: var(--accent-green);
             font-weight: 700;
@@ -119,7 +116,6 @@
             margin-left: 6px;
             user-select: none;
         }
-
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -129,7 +125,6 @@
             outline: none;
             cursor: pointer;
         }
-
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 16px;
@@ -140,9 +135,59 @@
             box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
             transition: transform 0.1s;
         }
-
         input[type="range"]::-webkit-slider-thumb:hover {
             transform: scale(1.15);
+        }
+        /* Modern Toggle Switch Checkbox tasarımı */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(11, 18, 34, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+            font-size: 14px;
+            color: var(--text-sub);
+            user-select: none;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border-color);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-toggle {
+            background-color: var(--accent-green);
+        }
+        input:checked + .slider-toggle:before {
+            transform: translateX(20px);
         }
 
         .summary-cards {
@@ -151,35 +196,29 @@
             gap: 16px;
             margin: 28px 0;
         }
-
         .card {
             background: rgba(11, 18, 34, 0.6);
             padding: 16px 18px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
         }
-
         .card.red { border-left: 4px solid var(--accent-red); }
         .card.green { border-left: 4px solid var(--accent-green); }
-
         .card-title {
             font-size: 12px;
             color: var(--text-sub);
             margin-bottom: 6px;
         }
-
         .card-value {
             font-size: 18px;
             font-weight: 700;
             color: var(--text-main);
         }
-
         .chart-container {
             position: relative;
             height: 260px;
             margin-top: 10px;
         }
-
         .footer-note {
             font-size: 11px;
             color: var(--text-sub);
@@ -190,7 +229,6 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header">
         <h1>☕ Bileşik Götürü Simülasyonu</h1>
@@ -209,16 +247,40 @@
         <input type="range" id="dailySlider" min="50" max="1000" step="25" value="200">
     </div>
 
-    <!-- Yıllık Net Getiri (Enflasyondan Arındırılmış) -->
-    <div class="slider-group">
-        <div class="slider-label">
-            <span>Yıllık Net Getiri (Enflasyondan Arındırılmış):</span>
-            <div class="input-box-wrapper">
-                <input type="number" id="rateInput" class="num-input" value="5" min="1" max="100" step="1">
-                <span class="unit">%</span>
+    <!-- Enflasyon ve Yatırım Getirisi (Yan Yana) -->
+    <div class="slider-row">
+        <!-- Yıllık Enflasyon -->
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Yıllık Enflasyon:</span>
+                <div class="input-box-wrapper">
+                    <input type="number" id="inflationInput" class="num-input" value="30" min="0" max="200" step="1">
+                    <span class="unit">%</span>
+                </div>
             </div>
+            <input type="range" id="inflationSlider" min="0" max="100" step="1" value="30">
         </div>
-        <input type="range" id="rateSlider" min="1" max="100" step="1" value="5">
+
+        <!-- Yıllık Net Getiri -->
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Yatırım Getirisi:</span>
+                <div class="input-box-wrapper">
+                    <input type="number" id="rateInput" class="num-input" value="35" min="0" max="200" step="1">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+            <input type="range" id="rateSlider" min="0" max="100" step="1" value="35">
+        </div>
+    </div>
+
+    <!-- Harcamaları Enflasyon Oranında Artır Toggle Checkbox -->
+    <div class="toggle-group">
+        <span>Harcamaları her yıl enflasyon oranında artır</span>
+        <label class="switch">
+            <input type="checkbox" id="increaseExpenseCheck" checked>
+            <span class="slider-toggle"></span>
+        </label>
     </div>
 
     <!-- Zaman Dilimi -->
@@ -257,16 +319,24 @@
     const dailyInput = document.getElementById('dailyInput');
     const dailySlider = document.getElementById('dailySlider');
 
+    const inflationInput = document.getElementById('inflationInput');
+    const inflationSlider = document.getElementById('inflationSlider');
+
     const rateInput = document.getElementById('rateInput');
     const rateSlider = document.getElementById('rateSlider');
 
     const yearsInput = document.getElementById('yearsInput');
     const yearsSlider = document.getElementById('yearsSlider');
 
+    const increaseExpenseCheck = document.getElementById('increaseExpenseCheck');
+
     const totalSpentEl = document.getElementById('totalSpent');
     const opportunityCostEl = document.getElementById('opportunityCost');
 
     const ctx = document.getElementById('myChart').getContext('2d');
+
+    let savedInflation = 30;
+    let savedRate = 35;
 
     let chart = new Chart(ctx, {
         type: 'line',
@@ -339,35 +409,47 @@
     }
 
     function calculate() {
-        const daily = parseFloat(dailyInput.value) || 0;
+        let initialDaily = parseFloat(dailyInput.value) || 0;
+        const inflation = parseFloat(inflationInput.value) || 0;
         const rate = parseFloat(rateInput.value) || 0;
         const years = parseInt(yearsInput.value) || 0;
+        const shouldIncrease = increaseExpenseCheck.checked;
 
         const labels = [];
         const spentData = [];
         const opportunityData = [];
 
-        const yearlySpent = daily * 365;
-        const monthlySpent = yearlySpent / 12; 
+        let cumulativeSpent = 0;
+        let cumulativeOppCost = 0;
         const monthlyRate = (rate / 100) / 12;
+
+        let currentDaily = initialDaily;
 
         for (let y = 1; y <= years; y++) {
             labels.push(y + '. Yıl');
-            
-            const totalSpent = yearlySpent * y;
-            spentData.push(totalSpent);
 
-            const totalMonths = y * 12;
-            let oppCost = 0;
-            if (monthlyRate > 0) {
-                oppCost = monthlySpent * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
-            } else {
-                oppCost = totalSpent;
+            if (y > 1 && shouldIncrease) {
+                currentDaily = currentDaily * (1 + (inflation / 100));
             }
-            opportunityData.push(Math.round(oppCost));
+
+            const yearlySpent = currentDaily * 365;
+            cumulativeSpent += yearlySpent;
+            spentData.push(Math.round(cumulativeSpent));
+
+            const monthlySpentThisYear = yearlySpent / 12;
+            
+            for (let m = 1; m <= 12; m++) {
+                if (monthlyRate > 0) {
+                    cumulativeOppCost = cumulativeOppCost * (1 + monthlyRate) + monthlySpentThisYear;
+                } else {
+                    cumulativeOppCost += monthlySpentThisYear;
+                }
+            }
+            
+            opportunityData.push(Math.round(cumulativeOppCost));
         }
 
-        totalSpentEl.textContent = Math.round(yearlySpent * years).toLocaleString('tr-TR') + ' TL';
+        totalSpentEl.textContent = Math.round(cumulativeSpent).toLocaleString('tr-TR') + ' TL';
         const finalOpp = opportunityData.length > 0 ? opportunityData[opportunityData.length - 1] : 0;
         opportunityCostEl.textContent = finalOpp.toLocaleString('tr-TR') + ' TL';
 
@@ -379,13 +461,11 @@
 
     function syncPair(input, slider) {
         updateSliderTrack(slider);
-
         input.addEventListener('input', () => {
             slider.value = input.value;
             updateSliderTrack(slider);
             calculate();
         });
-
         slider.addEventListener('input', () => {
             input.value = slider.value;
             updateSliderTrack(slider);
@@ -394,11 +474,43 @@
     }
 
     syncPair(dailyInput, dailySlider);
+    syncPair(inflationInput, inflationSlider);
     syncPair(rateInput, rateSlider);
     syncPair(yearsInput, yearsSlider);
 
+    increaseExpenseCheck.addEventListener('change', () => {
+        if (increaseExpenseCheck.checked) {
+            inflationInput.value = savedInflation;
+            inflationSlider.value = savedInflation;
+            rateInput.value = savedRate;
+            rateSlider.value = savedRate;
+        } else {
+            savedInflation = parseFloat(inflationInput.value) || 0;
+            savedRate = parseFloat(rateInput.value) || 5;
+
+            inflationInput.value = 0;
+            inflationSlider.value = 0;
+            rateInput.value = 5;
+            rateSlider.value = 5;
+        }
+
+        updateSliderTrack(inflationSlider);
+        updateSliderTrack(rateSlider);
+        calculate();
+    });
+
+    function updateMemoryIfChecked() {
+        if (increaseExpenseCheck.checked) {
+            savedInflation = parseFloat(inflationInput.value) || 0;
+            savedRate = parseFloat(rateInput.value) || 0;
+        }
+    }
+    inflationInput.addEventListener('input', updateMemoryIfChecked);
+    inflationSlider.addEventListener('input', updateMemoryIfChecked);
+    rateInput.addEventListener('input', updateMemoryIfChecked);
+    rateSlider.addEventListener('input', updateMemoryIfChecked);
+
     calculate();
 </script>
-
 </body>
 </html>
