@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bileşik Götürü Simülasyonu</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,53 +16,56 @@
             --text-sub: #94a3b8;
             --border-color: #26334d;
         }
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            box-sizing: border-box;
             overflow-x: hidden;
+            width: 100%;
         }
         .container {
             width: 100%;
             max-width: 680px;
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 28px 32px;
+            padding: 24px 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
-            box-sizing: border-box;
+            overflow: hidden;
         }
         .header {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
         .header h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             color: var(--text-main);
             letter-spacing: -0.3px;
         }
         .header p {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-sub);
             margin: 0;
         }
         .slider-group {
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
         .slider-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 22px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         .slider-row .slider-group {
             margin-bottom: 0;
@@ -71,9 +74,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: var(--text-sub);
         }
         .input-box-wrapper {
@@ -83,9 +86,9 @@
             background: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 6px 14px;
-            min-width: 110px;
-            box-sizing: border-box;
+            padding: 4px 10px;
+            min-width: 90px;
+            max-width: 120px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-box-wrapper:focus-within {
@@ -98,7 +101,7 @@
             outline: none;
             color: var(--accent-green);
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             width: 100%;
             text-align: right;
             font-family: inherit;
@@ -114,8 +117,8 @@
         .unit {
             color: var(--accent-green);
             font-weight: 700;
-            font-size: 14px;
-            margin-left: 6px;
+            font-size: 13px;
+            margin-left: 4px;
             user-select: none;
         }
         input[type="range"] {
@@ -137,20 +140,16 @@
             box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
             transition: transform 0.1s;
         }
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.15);
-        }
-        /* Modern Toggle Switch Checkbox tasarımı */
         .toggle-group {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background: rgba(11, 18, 34, 0.4);
             border: 1px solid var(--border-color);
-            padding: 12px 16px;
+            padding: 12px 14px;
             border-radius: 10px;
-            margin-bottom: 22px;
-            font-size: 14px;
+            margin-bottom: 20px;
+            font-size: 13px;
             color: var(--text-sub);
             user-select: none;
         }
@@ -195,38 +194,57 @@
         .summary-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin: 28px 0;
+            gap: 12px;
+            margin: 24px 0;
         }
         .card {
             background: rgba(11, 18, 34, 0.6);
-            padding: 16px 18px;
+            padding: 14px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
         }
         .card.red { border-left: 4px solid var(--accent-red); }
         .card.green { border-left: 4px solid var(--accent-green); }
         .card-title {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-sub);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .card-value {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--text-main);
+            word-break: break-all;
         }
         .chart-container {
             position: relative;
-            height: 260px;
+            height: 240px;
             margin-top: 10px;
+            width: 100%;
         }
         .footer-note {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-sub);
             text-align: center;
             margin-top: 20px;
-            line-height: 1.6;
+            line-height: 1.5;
+        }
+
+        /* Küçük ekranlar için özel ayarlamalar */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 16px 14px;
+            }
+            .slider-row {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -375,9 +393,9 @@
                 legend: { 
                     labels: { 
                         color: '#94a3b8', 
-                        font: { size: 12, family: "'Segoe UI', system-ui, -apple-system, sans-serif" },
-                        boxWidth: 12,
-                        padding: 12
+                        font: { size: 11, family: "'Segoe UI', system-ui, -apple-system, sans-serif" },
+                        boxWidth: 10,
+                        padding: 10
                     } 
                 },
                 tooltip: {
@@ -386,16 +404,16 @@
                     bodyColor: '#94a3b8',
                     borderColor: '#26334d',
                     borderWidth: 1,
-                    padding: 10
+                    padding: 8
                 }
             },
             scales: {
                 x: { 
-                    ticks: { color: '#94a3b8', font: { size: 11 } }, 
+                    ticks: { color: '#94a3b8', font: { size: 10 } }, 
                     grid: { color: 'rgba(38, 51, 77, 0.5)' } 
                 },
                 y: { 
-                    ticks: { color: '#94a3b8', font: { size: 11 } }, 
+                    ticks: { color: '#94a3b8', font: { size: 10 } }, 
                     grid: { color: 'rgba(38, 51, 77, 0.5)' } 
                 }
             }
